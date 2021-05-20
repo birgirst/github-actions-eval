@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: birgirst-github-actions-eval:latest
+        image: docker.pkg.github.com/birgirst/github-actions-eval/birgirst-github-actions-eval:latest
         ports:
         - containerPort: 80
       imagePullSecrets:
