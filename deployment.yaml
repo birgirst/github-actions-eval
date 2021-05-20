@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-actions-eval
+  labels:
+    app: github-actions-eval
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: github-actions-eval
+  template:
+    metadata:
+      labels:
+        app: github-actions-eval
+    spec:
+      containers:
+      - name: nginx
+        image: birgirst-github-actions-eval:latest
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+        - name: zakaria-github-com
