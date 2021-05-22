@@ -1,1 +1,0 @@
-https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/8b62805c-6ad9-41b4-9136-12060fb19c85/

@@ -5,7 +5,7 @@
     "finalizers": [],
     "labels": {
       "app": "birgir-github-actions-fiaas",
-      "fiaas/deployment_id": "2981a036-d411-4d0c-b9d5-902f877b0d88"
+      "fiaas/deployment_id": "${DEPLOYMENT_ID}"
     },
     "name": "birgir-github-actions-fiaas",
     "namespace": "sandbox-dev",
@@ -43,6 +43,6 @@
       },
       "version": 3
     },
-    "image": "containers.schibsted.io/spt-infra-delivery-test/birgir-github-actions-fiaas/birgir-test-image"
+    "image": "containers.schibsted.io/spt-infra-delivery-test/birgir-github-actions-fiaas/birgir-test-image:latest"
   }
 }
