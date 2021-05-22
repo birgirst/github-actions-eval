@@ -1,0 +1,48 @@
+{
+  "apiVersion": "fiaas.schibsted.io/v1",
+  "kind": "Application",
+  "metadata": {
+    "finalizers": [],
+    "labels": {
+      "app": "birgir-github-actions-fiaas",
+      "fiaas/deployment_id": "2981a036-d411-4d0c-b9d5-902f877b0d88"
+    },
+    "name": "birgir-github-actions-fiaas",
+    "namespace": "sandbox-dev",
+    "ownerReferences": []
+  },
+  "spec": {
+    "additional_annotations": {
+      "global": {}
+    },
+    "additional_labels": {
+      "global": {}
+    },
+    "application": "birgir-github-actions-fiaas",
+    "config": {
+      "healthchecks": {
+        "liveness": {
+          "http": {
+            "path": "/_/health"
+          }
+        }
+      },
+      "replicas": {
+        "maximum": 5,
+        "minimum": 2
+      },
+      "resources": {
+        "limits": {
+          "cpu": "100m",
+          "memory": "100Mi"
+        },
+        "requests": {
+          "cpu": "50m",
+          "memory": "30Mi"
+        }
+      },
+      "version": 3
+    },
+    "image": "containers.schibsted.io/spt-infra-delivery-test/birgir-github-actions-fiaas/birgir-test-image"
+  }
+}
