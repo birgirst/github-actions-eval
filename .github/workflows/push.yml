@@ -21,3 +21,20 @@ jobs:
         KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
       with:
         args: apply -f deployment.yaml
+
+   - name: Check DEV Deployment Status
+      run: |
+        STATUS_URL=$(cat status_url.txt)
+        attempts=10
+        RETURN=1
+        while [ $attempts -gt 0 ]; 
+        do 
+          attempts=`expr ${attempts} - 1`
+          echo "left attempts=${attempts}"
+          RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
+          if [ $RESULT == "SUCCESS" ];then
+            exit 0
+          fi
+          sleep 5
+        done
+        exit 1
