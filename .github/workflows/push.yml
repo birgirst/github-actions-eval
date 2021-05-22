@@ -20,21 +20,19 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
       with:
-        args: apply -f application.json
+        args: apply -f application.json -nsandbox-dev
 
     - name: Check DEV Deployment Status
       run: |
         STATUS_URL=$(cat status_url.txt)
-        attempts=10
-        RETURN=1
-        while [ $attempts -gt 0 ]; 
-        do 
-          attempts=`expr ${attempts} - 1`
-          echo "left attempts=${attempts}"
+        n=10
+        until [ "$n" -ge 5 ]
+        do
           RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
           if [ $RESULT == "SUCCESS" ];then
             exit 0
           fi
-          sleep 5
+          n=$((n+1)) 
+          sleep 15
         done
         exit 1
