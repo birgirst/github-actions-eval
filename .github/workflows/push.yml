@@ -20,9 +20,9 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
       with:
-        args: apply -f deployment.yaml
+        args: apply -f application.json
 
-   - name: Check DEV Deployment Status
+    - name: Check DEV Deployment Status
       run: |
         STATUS_URL=$(cat status_url.txt)
         attempts=10
