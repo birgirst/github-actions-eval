@@ -20,7 +20,7 @@ jobs:
        #export DEPLOYMENT_ID=${tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo ''}
        #envsubst < application.json
        export DEPLOYMENT_ID=123
-       echo "::set-env name=DEPLOYMENT_ID::$DEPLOYMENT_ID"
+       #echo "::set-env name=DEPLOYMENT_ID::$DEPLOYMENT_ID"
 
     - uses: addnab/docker-run-action@v3
       with:
@@ -40,7 +40,8 @@ jobs:
 
     - name: Check DEV Deployment Status
       run: |
-        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
+        #STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
+        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/123/"
         n=10
         until [ "$n" -ge 5 ]
         do
