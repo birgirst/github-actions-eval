@@ -20,6 +20,16 @@ jobs:
        export DEPLOYMENT_ID=${tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo ''}
        envsubst < application.json
        echo "::set-env name=DEPLOYMENT_ID::$DEPLOYMENT_ID" 
+
+    - uses: addnab/docker-run-action@v3
+      with:
+        image: birgirst/fiaas-mast:latest
+        shell: bash
+        run: |
+          echo "first line"
+          echo "second line"
+          fiaas-mast --help
+
     - name: deploy to cluster
       uses: kodermax/kubectl-aws-eks@master
       env:
