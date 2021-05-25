@@ -25,7 +25,7 @@ jobs:
     - uses: addnab/docker-run-action@v3
       with:
         image: birgirst/fiaas-mast:latest
-        shell: bash
+        shell: sh
         run: |
           echo "first line"
           echo "second line"
