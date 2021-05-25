@@ -1,0 +1,10 @@
+---
+# This is a basic PaaS config file and most of it is optional.
+# Find all the available configs here https://github.com/fiaas/fiaas-deploy-daemon/blob/master/docs/v3_spec.md
+version: 3
+healthchecks:
+  liveness:
+    http:
+      path: /_/health
+extensions:
+  tls: true
