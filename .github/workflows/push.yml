@@ -17,9 +17,10 @@ jobs:
     
     - name: Dep id
       run: |
-       export DEPLOYMENT_ID=${tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo ''}
+       #export DEPLOYMENT_ID=${tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo ''}
        #envsubst < application.json
-       echo "::set-env name=DEPLOYMENT_ID::$DEPLOYMENT_ID" 
+       export DEPLOYMENT_ID=123
+       echo "::set-env name=DEPLOYMENT_ID::$DEPLOYMENT_ID"
 
     - uses: addnab/docker-run-action@v3
       with:
