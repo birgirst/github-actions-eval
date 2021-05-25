@@ -22,14 +22,19 @@ jobs:
        export DEPLOYMENT_ID=123
        #echo "::set-env name=DEPLOYMENT_ID::$DEPLOYMENT_ID"
 
-    - uses: addnab/docker-run-action@v3
+    - name: gen-app
+      uses: addnab/docker-run-action@v3
       with:
         image: birgirst/fiaas-mast:latest
         shell: sh
         run: |
-          echo "first line"
-          echo "second line"
-          fiaas-mast --help
+          $output=${fiaas-mast --appspec paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest}
+          Write-Output "::set-output name=application::$output"
+
+    - name: Check DEV Deployment Status
+      run: |
+        echo "birgir-birgir"
+        echo "${{ steps.gen-app.output.application }}"
 
     - name: deploy to cluster
       uses: kodermax/kubectl-aws-eks@master
