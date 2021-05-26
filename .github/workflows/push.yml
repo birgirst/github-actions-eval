@@ -28,11 +28,11 @@ jobs:
         image: birgirst/fiaas-mast:latest
         shell: sh
         run: |
+          env
           pwd
           which fiaas-mast
-          ls /home
-          ls /var
-          cd /home/runner/work/github-actions-eval/github-actions-eval
+          ls /github/workspace
+          cd /github/workspace
           ${fiaas-mast --appspec paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application} > myapplication.json
           cat myapplication.json
 
