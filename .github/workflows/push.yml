@@ -31,10 +31,7 @@ jobs:
           pwd
           which fiaas-mast
           ls /home
-          ls /home/runner
-          ls /home/runner/work
-          ls /home/runner/work/github-actions-eval
-          ls /home/runner/work/github-actions-eval/github-actions-eval
+          ls /var
           cd /home/runner/work/github-actions-eval/github-actions-eval
           ${fiaas-mast --appspec paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application} > myapplication.json
           cat myapplication.json
