@@ -43,7 +43,7 @@ jobs:
     outputs:
       image: ${{ steps.push.outputs.image }}
 
-  runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     if: github.event_name == 'push'
 
     permissions:
