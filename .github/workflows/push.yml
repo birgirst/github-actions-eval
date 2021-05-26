@@ -31,7 +31,7 @@ jobs:
         run: |
           apk add jq
           fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application > /work/myapplication.json
-          cat myapplication.json
+          cat /work/myapplication.json
 
     - name: Check DEV Deployment Status
       run: |
