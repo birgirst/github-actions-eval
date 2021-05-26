@@ -29,7 +29,6 @@ jobs:
         shell: sh
         options: -v ${{ github.workspace }}:/work:rw
         run: |
-          apt-get --assume-yes install jq
           fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application > /work/myapplication.json
           cat myapplication.json
 
