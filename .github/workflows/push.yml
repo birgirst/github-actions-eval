@@ -28,20 +28,20 @@ jobs:
         image: birgirst/fiaas-mast:latest
         shell: sh
         run: |
-          $output=${fiaas-mast --appspec paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest}
-          Write-Output "::set-output name=application::$output"
+          ${fiaas-mast --appspec paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application} > myapplication.json
+          cat myapplication.json
 
     - name: Check DEV Deployment Status
       run: |
         echo "birgir-birgir"
-        echo "${{ steps.gen-app.output.application }}"
+        cat myapplication.json
 
     - name: deploy to cluster
       uses: kodermax/kubectl-aws-eks@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
       with:
-        args: apply -f application.json -nsandbox-dev
+        args: apply -f myapplication.json -nsandbox-dev
 
     - name: Check DEV Deployment Status
       run: |
