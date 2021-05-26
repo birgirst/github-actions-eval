@@ -27,7 +27,7 @@ jobs:
       with:
         image: birgirst/fiaas-mast:latest
         shell: sh
-        options: -v ${{ github.workspace }}:/work
+        options: -v ${{ github.workspace }}:/work:rw
         run: |
           whoami
           cd /work
