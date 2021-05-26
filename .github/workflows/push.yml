@@ -15,14 +15,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-west-1
     
-    - name: Dep id
-      run: |
-       #export DEPLOYMENT_ID=${tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo ''}
-       #envsubst < application.json
-       export DEPLOYMENT_ID=123
-       #echo "::set-env name=DEPLOYMENT_ID::$DEPLOYMENT_ID"
-
-    - name: gen-app
+    - name: Generate application manifest
       uses: addnab/docker-run-action@v3
       with:
         image: birgirst/fiaas-mast:latest
@@ -30,8 +23,11 @@ jobs:
         options: -v ${{ github.workspace }}:/work:rw
         run: |
           apk add jq
-          fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application > /work/myapplication.json
+          output=${fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest}
+          echo $output| jq .application > /work/myapplication.json
+          echo $output| jq .deployment_id > /work/deployment_id
           cat /work/myapplication.json
+          cat /work/deployment_id
 
     - name: Check DEV Deployment Status
       run: |
@@ -47,8 +43,9 @@ jobs:
 
     - name: Check DEV Deployment Status
       run: |
-        #STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
-        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/123/"
+        DEPLOYMENT_ID=${cat deployment_id}
+        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
+        #STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/123/"
         n=10
         until [ "$n" -ge 5 ]
         do
