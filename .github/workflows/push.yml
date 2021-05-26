@@ -29,10 +29,7 @@ jobs:
         shell: sh
         options: -v ${{ github.workspace }}:/work:rw
         run: |
-          whoami
-          cd /work
-          ls -al /work
-          ${fiaas-mast --appspec paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application} > myapplication.json
+          fiaas-mast --appspec paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application > myapplication.json
           cat myapplication.json
 
     - name: Check DEV Deployment Status
