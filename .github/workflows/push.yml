@@ -28,6 +28,8 @@ jobs:
         image: birgirst/fiaas-mast:latest
         shell: sh
         run: |
+          pwd
+          which fiaas-mast
           ${fiaas-mast --appspec paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application} > myapplication.json
           cat myapplication.json
 
