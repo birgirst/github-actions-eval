@@ -24,10 +24,10 @@ jobs:
 
     - name: gen-app
       uses: addnab/docker-run-action@v3
-      options: -v ${{ github.workspace }}:/work
       with:
         image: birgirst/fiaas-mast:latest
         shell: sh
+        options: -v ${{ github.workspace }}:/work
         run: |
           cd /work
           ${fiaas-mast --appspec paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application} > myapplication.json
