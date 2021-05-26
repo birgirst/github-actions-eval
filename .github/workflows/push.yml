@@ -1,7 +1,83 @@
-on: push
-name: deploy
+name: Docker
+
+on:
+  push:
+    # Publish `main` as Docker `latest` image.
+    branches:
+      - main
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+  # Run tests for any PRs.
+  pull_request:
+
+env:
+  # TODO: Change variable to your image's name.
+  IMAGE_NAME: birgirst-github-actions-eval
+
 jobs:
+  # Run tests.
+  # See also https://docs.docker.com/docker-hub/builds/automated-testing/
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Run tests
+        run: |
+          if [ -f docker-compose.test.yml ]; then
+            docker-compose --file docker-compose.test.yml build
+            docker-compose --file docker-compose.test.yml run sut
+          else
+            docker build . --file Dockerfile
+          fi
+  # Push image to GitHub Packages.
+  # See also https://docs.docker.com/docker-hub/builds/
+  push:
+    # Ensure test job passes before pushing image.
+    needs: test
+
+  # Map a step output to a job output
+    outputs:
+      image: ${{ steps.push.outputs.image }}
+
+  runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build image
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME
+
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Push image
+        run: |
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && VERSION=latest
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+          echo "::set-output name=image::$IMAGE_ID:$VERSION"
+
   deploy:
+    needs: push
     name: deploy to cluster
     runs-on: ubuntu-latest
     steps:
@@ -22,8 +98,9 @@ jobs:
         shell: sh
         options: -v ${{ github.workspace }}:/work:rw
         run: |
+          echo ${{needs.push.outputs.image}}
           apk add jq
-          fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest > output.json
+          fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-dev --image ${{needs.push.outputs.image}} > output.json
           cat output.json| jq .application > /work/myapplication.json
           cat output.json| jq .deployment_id | |sed 's/\"//g' > /work/deployment_id
           cat /work/myapplication.json
