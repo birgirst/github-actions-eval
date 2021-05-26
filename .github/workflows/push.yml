@@ -30,6 +30,8 @@ jobs:
         run: |
           pwd
           which fiaas-mast
+          ls /github/workspace
+          cd /github/workspace
           ${fiaas-mast --appspec paas.yaml --application-name myapp --namespace sandbox-dev --image birgirst/myimage:latest | jq .application} > myapplication.json
           cat myapplication.json
 
