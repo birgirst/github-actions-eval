@@ -102,8 +102,8 @@ jobs:
           echo ${{needs.push.outputs.image}}
           apk add jq
           fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-dev --image ${{needs.push.outputs.image}} > output.json
-          cat output.json| jq .application > /work/myapplication.json
-          cat output.json| jq .deployment_id | |sed 's/\"//g' > /work/deployment_id
+          cat output.json | jq .application > /work/myapplication.json
+          cat output.json | jq .deployment_id | |sed 's/\"//g' > /work/deployment_id
           cat /work/myapplication.json
           cat /work/deployment_id
 
