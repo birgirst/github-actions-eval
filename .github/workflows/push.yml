@@ -121,7 +121,7 @@ jobs:
 
     - name: Check DEV Deployment Status
       run: |
-        DEPLOYMENT_ID=${cat deployment_id}
+        DEPLOYMENT_ID=$(cat deployment_id)
         STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
         #STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/123/"
         n=10
