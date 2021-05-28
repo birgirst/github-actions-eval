@@ -77,9 +77,9 @@ jobs:
           docker push $IMAGE_ID:$VERSION
           echo "::set-output name=image::$IMAGE_ID:$VERSION"
 
-  deploy:
+  deploy-dev:
     needs: build-and-publish-container-image
-    name: deploy to cluster
+    name: deploy to df-sandbox-1 / sandbox-dev
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -135,6 +135,36 @@ jobs:
         done
         exit 1
 
+  deploy-pre:
+    needs: [build-and-publish-container-image, deploy-dev]
+    name: deploy to df-sandbox-1 / sandbox-pre
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
+    
+    - name: Generate application manifest
+      uses: addnab/docker-run-action@v3
+      with:
+        image: birgirst/fiaas-mast:latest
+        shell: sh
+        options: -v ${{ github.workspace }}:/work:rw
+        run: |
+          echo ${{needs.push.outputs.image}}
+          apk add jq
+          fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-pre --image ${{needs.build-and-publish-container-image.outputs.image}} > output.json
+          cat output.json | jq .application > /work/myapplication.json
+          cat output.json | jq .deployment_id | sed 's/\"//g' > /work/deployment_id
+          cat /work/myapplication.json
+          cat /work/deployment_id
+
     - name: deploy to df-sandbox-1/pre
       uses: kodermax/kubectl-aws-eks@master
       env:
@@ -163,6 +193,36 @@ jobs:
         done
         exit 1
 
+  deploy-pro:
+    needs: [build-and-publish-container-image, deploy-dev, deploy-pre]
+    name: deploy to df-sandbox-1 / sandbox-pro
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
+    
+    - name: Generate application manifest
+      uses: addnab/docker-run-action@v3
+      with:
+        image: birgirst/fiaas-mast:latest
+        shell: sh
+        options: -v ${{ github.workspace }}:/work:rw
+        run: |
+          echo ${{needs.push.outputs.image}}
+          apk add jq
+          fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-pro --image ${{needs.build-and-publish-container-image.outputs.image}} > output.json
+          cat output.json | jq .application > /work/myapplication.json
+          cat output.json | jq .deployment_id | sed 's/\"//g' > /work/deployment_id
+          cat /work/myapplication.json
+          cat /work/deployment_id
+
     - name: deploy to df-sandbox-1/pro
       uses: kodermax/kubectl-aws-eks@master
       env:
@@ -170,7 +230,7 @@ jobs:
       with:
         args: apply -f myapplication.json -nsandbox-pro
 
-    - name: Check Deployment Status PRE
+    - name: Check Deployment Status DEV
       run: |
         DEPLOYMENT_ID=$(cat deployment_id)
         STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-pro/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
