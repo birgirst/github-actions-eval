@@ -125,7 +125,7 @@ jobs:
         STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
         echo ${STATUS_URL}
         n=1
-        until [ $n -ge 10 ]
+        until [ $n -ge 30 ]
         do
           echo Attempt: ${n}
           RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
@@ -136,6 +136,6 @@ jobs:
           fi
           ((n++))
           echo "still waiting on success"
-          sleep 15
+          sleep 10
         done
         exit 33
