@@ -123,15 +123,16 @@ jobs:
       run: |
         DEPLOYMENT_ID=$(cat deployment_id)
         STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
-        #STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/123/"
+        echo ${STATUS_URL}
         n=10
         until [ "$n" -ge 5 ]
         do
+          echo ${n}
           RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
           if [ $RESULT == "SUCCESS" ];then
             exit 0
           fi
-          n=$((n+1)) 
+          ((n++))
           sleep 15
         done
-        exit 1
+        exit 33
