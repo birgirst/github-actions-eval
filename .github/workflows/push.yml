@@ -1,4 +1,4 @@
-name: Docker
+name: Build and Deploy
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
           fi
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
-  push:
+  build-and-publish-container-image:
     # Ensure test job passes before pushing image.
     needs: test
 
@@ -78,7 +78,7 @@ jobs:
           echo "::set-output name=image::$IMAGE_ID:$VERSION"
 
   deploy:
-    needs: push
+    needs: build-and-publish-container-image
     name: deploy to cluster
     runs-on: ubuntu-latest
     steps:
@@ -101,25 +101,20 @@ jobs:
         run: |
           echo ${{needs.push.outputs.image}}
           apk add jq
-          fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-dev --image ${{needs.push.outputs.image}} > output.json
+          fiaas-mast --appspec /work/paas.yaml --application-name myapp --namespace sandbox-dev --image ${{needs.build-and-publish-container-image.outputs.image}} > output.json
           cat output.json | jq .application > /work/myapplication.json
           cat output.json | jq .deployment_id | sed 's/\"//g' > /work/deployment_id
           cat /work/myapplication.json
           cat /work/deployment_id
 
-    - name: Check DEV Deployment Status
-      run: |
-        echo "birgir-birgir"
-        cat myapplication.json
-
-    - name: deploy to cluster
+    - name: deploy to df-sandbox-1/dev
       uses: kodermax/kubectl-aws-eks@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
       with:
         args: apply -f myapplication.json -nsandbox-dev
 
-    - name: Check DEV Deployment Status
+    - name: Check Deployment Status DEV
       run: |
         DEPLOYMENT_ID=$(cat deployment_id)
         STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
@@ -138,4 +133,60 @@ jobs:
           echo "still waiting on success"
           sleep 10
         done
-        exit 33
+        exit 1
+
+    - name: deploy to df-sandbox-1/pre
+      uses: kodermax/kubectl-aws-eks@master
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
+      with:
+        args: apply -f myapplication.json -nsandbox-pre
+
+    - name: Check Deployment Status PRE
+      run: |
+        DEPLOYMENT_ID=$(cat deployment_id)
+        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-pre/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
+        echo ${STATUS_URL}
+        n=1
+        until [ $n -ge 30 ]
+        do
+          echo Attempt: ${n}
+          RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
+          echo ${RESULT}
+          if [ $RESULT == "SUCCESS" ];then
+            echo "success"
+            exit 0
+          fi
+          ((n++))
+          echo "still waiting on success"
+          sleep 10
+        done
+        exit 1
+
+    - name: deploy to df-sandbox-1/pro
+      uses: kodermax/kubectl-aws-eks@master
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
+      with:
+        args: apply -f myapplication.json -nsandbox-pro
+
+    - name: Check Deployment Status PRE
+      run: |
+        DEPLOYMENT_ID=$(cat deployment_id)
+        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-pro/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
+        echo ${STATUS_URL}
+        n=1
+        until [ $n -ge 30 ]
+        do
+          echo Attempt: ${n}
+          RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
+          echo ${RESULT}
+          if [ $RESULT == "SUCCESS" ];then
+            echo "success"
+            exit 0
+          fi
+          ((n++))
+          echo "still waiting on success"
+          sleep 10
+        done
+        exit 1
