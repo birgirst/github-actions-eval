@@ -116,34 +116,6 @@ jobs:
       with:
         args: apply -f myapplication.json -nsandbox-dev
 
-#    - name: Check Deployment Status DEV
-#      run: |
-#        DEPLOYMENT_ID=$(cat deployment_id)
-#        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
-#        echo ${STATUS_URL}
-#        n=1
-#        until [ $n -ge 30 ]
-#        do
-#          echo Attempt: ${n}
-#          RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
-#          echo ${RESULT}
-#          if [ $RESULT == "SUCCESS" ];then
-#            echo "success"
-#            exit 0
-#          fi
-#          ((n++))
-#          echo "still waiting on success"
-#          sleep 10
-#        done
-#        exit 1
-#
-#    - name: check application status df-sandbox-1/dev
-#      uses: birgirst/kubectl-aws-eks@master
-#      env:
-#        KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
-#      with:
-#        args: get applicationstatus -lfiaas/deployment_id=${{steps.generate-manifest-dev.outputs.deployment-id}} -ojson -nsandbox-dev | jq '.items | .[] | .result' | sed 's/\"//g'
-
     - name: check application status df-sandbox-1/dev
       uses: birgirst/fiaas-status@main
       env:
@@ -180,6 +152,7 @@ jobs:
           cat output.json | jq .deployment_id | sed 's/\"//g' > /work/deployment_id
           cat /work/myapplication.json
           cat /work/deployment_id
+          echo "::set-output name=deployment-id::$(cat /work/deployment_id)"
 
     - name: deploy to df-sandbox-1/pre
       uses: birgirst/kubectl-aws-eks@master
@@ -188,26 +161,12 @@ jobs:
       with:
         args: apply -f myapplication.json -nsandbox-pre
 
-    - name: Check Deployment Status PRE
-      run: |
-        DEPLOYMENT_ID=$(cat deployment_id)
-        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-pre/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
-        echo ${STATUS_URL}
-        n=1
-        until [ $n -ge 30 ]
-        do
-          echo Attempt: ${n}
-          RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
-          echo ${RESULT}
-          if [ $RESULT == "SUCCESS" ];then
-            echo "success"
-            exit 0
-          fi
-          ((n++))
-          echo "still waiting on success"
-          sleep 10
-        done
-        exit 1
+    - name: check application status df-sandbox-1/pre
+      uses: birgirst/fiaas-status@main
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
+      with:
+        args: ${{steps.generate-manifest-pre.outputs.deployment-id}} -nsandbox-pre
 
   deploy-pro:
     needs: [build-and-publish-container-image, deploy-dev, deploy-pre]
@@ -238,6 +197,7 @@ jobs:
           cat output.json | jq .deployment_id | sed 's/\"//g' > /work/deployment_id
           cat /work/myapplication.json
           cat /work/deployment_id
+          echo "::set-output name=deployment-id::$(cat /work/deployment_id)"
 
     - name: deploy to df-sandbox-1/pro
       uses: kodermax/kubectl-aws-eks@master
@@ -246,23 +206,9 @@ jobs:
       with:
         args: apply -f myapplication.json -nsandbox-pro
 
-    - name: Check Deployment Status DEV
-      run: |
-        DEPLOYMENT_ID=$(cat deployment_id)
-        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-pro/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
-        echo ${STATUS_URL}
-        n=1
-        until [ $n -ge 30 ]
-        do
-          echo Attempt: ${n}
-          RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
-          echo ${RESULT}
-          if [ $RESULT == "SUCCESS" ];then
-            echo "success"
-            exit 0
-          fi
-          ((n++))
-          echo "still waiting on success"
-          sleep 10
-        done
-        exit 1
+    - name: check application status df-sandbox-1/pro
+      uses: birgirst/fiaas-status@main
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
+      with:
+        args: ${{steps.generate-manifest-pro.outputs.deployment-id}} -nsandbox-pro
