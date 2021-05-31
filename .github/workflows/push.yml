@@ -93,6 +93,7 @@ jobs:
         aws-region: eu-west-1
     
     - name: Generate application manifest
+      id: generate-manifest-dev
       uses: addnab/docker-run-action@v3
       with:
         image: birgirst/fiaas-mast:latest
@@ -106,6 +107,7 @@ jobs:
           cat output.json | jq .deployment_id | sed 's/\"//g' > /work/deployment_id
           cat /work/myapplication.json
           cat /work/deployment_id
+          echo "::set-output name=deployment-id::$(cat deployment_id)\n"
 
     - name: deploy to df-sandbox-1/dev
       uses: kodermax/kubectl-aws-eks@master
@@ -134,6 +136,20 @@ jobs:
           sleep 10
         done
         exit 1
+
+    - name: check application status df-sandbox-1/dev
+      uses: birgirst/kubectl-aws-eks@master
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
+      with:
+        args: get applicationstatus -lfiaas/deployment_id=${steps.generate-manifest-dev.outputs.deployment-id} -ojson -nsandbox-dev | jq '.items | .[] | .result' | sed 's/\"//g'
+
+    - name: check application status df-sandbox-1/dev
+      uses: birgirst/fiaas-status@master
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
+      with:
+        args: ${steps.generate-manifest-dev.outputs.deployment-id} -nsandbox-dev
 
   deploy-pre:
     needs: [build-and-publish-container-image, deploy-dev]
@@ -166,7 +182,7 @@ jobs:
           cat /work/deployment_id
 
     - name: deploy to df-sandbox-1/pre
-      uses: kodermax/kubectl-aws-eks@master
+      uses: birgirst/kubectl-aws-eks@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
       with:
