@@ -145,7 +145,7 @@ jobs:
         args: get applicationstatus -lfiaas/deployment_id=${steps.generate-manifest-dev.outputs.deployment-id} -ojson -nsandbox-dev | jq '.items | .[] | .result' | sed 's/\"//g'
 
     - name: check application status df-sandbox-1/dev
-      uses: birgirst/fiaas-status@master
+      uses: birgirst/fiaas-status@main
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
       with:
