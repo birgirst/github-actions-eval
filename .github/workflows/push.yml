@@ -116,33 +116,33 @@ jobs:
       with:
         args: apply -f myapplication.json -nsandbox-dev
 
-    - name: Check Deployment Status DEV
-      run: |
-        DEPLOYMENT_ID=$(cat deployment_id)
-        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
-        echo ${STATUS_URL}
-        n=1
-        until [ $n -ge 30 ]
-        do
-          echo Attempt: ${n}
-          RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
-          echo ${RESULT}
-          if [ $RESULT == "SUCCESS" ];then
-            echo "success"
-            exit 0
-          fi
-          ((n++))
-          echo "still waiting on success"
-          sleep 10
-        done
-        exit 1
-
-    - name: check application status df-sandbox-1/dev
-      uses: birgirst/kubectl-aws-eks@master
-      env:
-        KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
-      with:
-        args: get applicationstatus -lfiaas/deployment_id=${{steps.generate-manifest-dev.outputs.deployment-id}} -ojson -nsandbox-dev | jq '.items | .[] | .result' | sed 's/\"//g'
+#    - name: Check Deployment Status DEV
+#      run: |
+#        DEPLOYMENT_ID=$(cat deployment_id)
+#        STATUS_URL="https://fiaas-mast.df-sandbox-1.eks.schibsted.io/status/sandbox-dev/birgir-github-actions-fiaas/${DEPLOYMENT_ID}/"
+#        echo ${STATUS_URL}
+#        n=1
+#        until [ $n -ge 30 ]
+#        do
+#          echo Attempt: ${n}
+#          RESULT=$(curl -s ${STATUS_URL} | jq -r ".status")
+#          echo ${RESULT}
+#          if [ $RESULT == "SUCCESS" ];then
+#            echo "success"
+#            exit 0
+#          fi
+#          ((n++))
+#          echo "still waiting on success"
+#          sleep 10
+#        done
+#        exit 1
+#
+#    - name: check application status df-sandbox-1/dev
+#      uses: birgirst/kubectl-aws-eks@master
+#      env:
+#        KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG_DF_SANDBOX_1 }}
+#      with:
+#        args: get applicationstatus -lfiaas/deployment_id=${{steps.generate-manifest-dev.outputs.deployment-id}} -ojson -nsandbox-dev | jq '.items | .[] | .result' | sed 's/\"//g'
 
     - name: check application status df-sandbox-1/dev
       uses: birgirst/fiaas-status@main
