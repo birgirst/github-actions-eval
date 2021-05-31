@@ -107,7 +107,7 @@ jobs:
           cat output.json | jq .deployment_id | sed 's/\"//g' > /work/deployment_id
           cat /work/myapplication.json
           cat /work/deployment_id
-          echo "::set-output name=deployment-id::$(cat deployment_id)\n"
+          echo "::set-output name=deployment-id::$(cat /work/deployment_id)\n"
 
     - name: deploy to df-sandbox-1/dev
       uses: kodermax/kubectl-aws-eks@master
